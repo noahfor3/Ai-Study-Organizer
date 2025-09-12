@@ -1,5 +1,6 @@
-# Ai-Study-Organizer - CPSC 491 Capstone Project
+# AI Study Organizer - CPSC 491 Capstone Project
 **Ryan Takata | Noah Yarbrough | Thien La | Amr Mahmoud**  
+
 This project is an AI powered study organizer that assists students with daily needs throughout their time in schooling. It uses Next.js, TypeScript, and Tailwind CSS to deliver a powerful companion to assist with time and study management.
 
 ## How to Setup in a New Environment
