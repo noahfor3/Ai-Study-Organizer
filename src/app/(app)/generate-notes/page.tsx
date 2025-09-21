@@ -6,16 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, NotebookPen, Loader2, AlertTriangle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, NotebookPen, Loader2, AlertTriangle, Copy, Download, RefreshCw } from 'lucide-react';
 import { generateNotes, GenerateNotesInput, GenerateNotesOutput } from '@/ai/flows/generate-notes-flow';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function GenerateNotesPage() {
   const [documentContent, setDocumentContent] = React.useState('');
+  const [noteStyle, setNoteStyle] = React.useState<'comprehensive' | 'concise' | 'bullet-points' | 'outline'>('comprehensive');
+  const [focusArea, setFocusArea] = React.useState('');
   const [generatedNotes, setGeneratedNotes] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [formError, setFormError] = React.useState<string | null>(null);
+  const [copySuccess, setCopySuccess] = React.useState(false);
 
   const handleGenerate = async () => {
     if (documentContent.trim().length < 50) {
@@ -26,9 +31,14 @@ export default function GenerateNotesPage() {
     setIsLoading(true);
     setError(null);
     setGeneratedNotes(null);
+    setCopySuccess(false);
 
     try {
-      const input: GenerateNotesInput = { documentContent };
+      const input: GenerateNotesInput = { 
+        documentContent,
+        noteStyle,
+        focusArea: focusArea.trim() || undefined
+      };
       const result: GenerateNotesOutput = await generateNotes(input);
       if (result.notes) {
         setGeneratedNotes(result.notes);
@@ -41,6 +51,36 @@ export default function GenerateNotesPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCopyNotes = async () => {
+    if (generatedNotes) {
+      try {
+        await navigator.clipboard.writeText(generatedNotes);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy notes:', err);
+      }
+    }
+  };
+
+  const handleDownloadNotes = () => {
+    if (generatedNotes) {
+      const blob = new Blob([generatedNotes], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `study-notes-${new Date().toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleRegenerate = () => {
+    handleGenerate();
   };
 
   return (
@@ -85,6 +125,39 @@ export default function GenerateNotesPage() {
               Minimum 50 characters required. The more detailed the text, the better the notes.
             </p>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="noteStyle">Note Style</Label>
+              <Select value={noteStyle} onValueChange={(value: any) => setNoteStyle(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select note style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="comprehensive">Comprehensive (Detailed)</SelectItem>
+                  <SelectItem value="concise">Concise (Brief)</SelectItem>
+                  <SelectItem value="bullet-points">Bullet Points</SelectItem>
+                  <SelectItem value="outline">Outline Format</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Choose how detailed you want your notes to be.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="focusArea">Focus Area (Optional)</Label>
+              <Input
+                id="focusArea"
+                placeholder="e.g., key concepts, definitions, examples"
+                value={focusArea}
+                onChange={(e) => setFocusArea(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Specify what to emphasize in the notes.
+              </p>
+            </div>
+          </div>
           <Button onClick={handleGenerate} disabled={isLoading || documentContent.trim().length < 50} className="w-full sm:w-auto">
             {isLoading ? (
               <>
@@ -109,14 +182,51 @@ export default function GenerateNotesPage() {
       {generatedNotes && !error && (
         <Card className="w-full max-w-2xl mt-8 shadow-lg">
           <CardHeader>
-            <CardTitle>Generated Notes</CardTitle>
-            <CardDescription>Here are the notes based on your provided content.</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Generated Notes</CardTitle>
+                <CardDescription>Here are the AI-generated notes based on your content.</CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyNotes}
+                  className="flex items-center gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  {copySuccess ? 'Copied!' : 'Copy'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadNotes}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isLoading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Regenerate
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="p-4 bg-muted/50 rounded-md border min-h-[200px] whitespace-pre-wrap text-sm">
+            <div className="p-4 bg-muted/50 rounded-md border min-h-[200px] whitespace-pre-wrap text-sm prose prose-sm max-w-none">
               {generatedNotes}
             </div>
           </CardContent>
+          <CardFooter className="text-xs text-muted-foreground">
+            💡 Tip: You can copy these notes to your study materials or download them as a markdown file.
+          </CardFooter>
         </Card>
       )}
     </div>
