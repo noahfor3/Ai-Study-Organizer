@@ -1,7 +1,12 @@
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ListChecks, BookOpen, PlusCircle, CalendarDays, Wand2, Calendar as CalendarIcon, UploadCloud, FileQuestion, ArrowRight, Layers, NotebookPen } from 'lucide-react';
+"use client"
+
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ListChecks, BookOpen, PlusCircle, CalendarDays, Wand2, Calendar as CalendarIcon, UploadCloud, FileQuestion, ArrowRight, Layers, NotebookPen } from 'lucide-react'
+import supabase from '@/lib/supabaseBrowser'
 
 const featureTiles = [
   { title: "Add New Course", description: "Input details for your courses and deadlines.", href: "/add-course", icon: PlusCircle, cta: "Add Course" },
@@ -26,6 +31,48 @@ const studySessions = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function checkSession() {
+      if (!supabase) {
+        // If supabase client isn't available on the client, send user to login.
+        router.replace('/')
+        return
+      }
+
+      const { data: sessionData, error } = await supabase.auth.getSession()
+
+      if (!mounted) return
+
+      if (error) {
+        // if there's an error getting session, redirect to login
+        router.replace('/')
+        return
+      }
+
+      if (!sessionData?.session) {
+        router.replace('/')
+        return
+      }
+
+      setLoading(false)
+    }
+
+    checkSession()
+
+    return () => {
+      mounted = false
+    }
+  }, [router])
+
+  if (loading) {
+    return <div className="p-8">Loading...</div>
+  }
+
   return (
     <div className="grid flex-1 items-start gap-6 md:gap-8">
       <div className="mb-6">
@@ -106,5 +153,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
