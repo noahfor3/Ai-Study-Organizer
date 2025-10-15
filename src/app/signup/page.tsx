@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -18,10 +18,18 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
+  const [checkingUsername, setCheckingUsername] = useState(false)
+  const usernameCheckRef = useRef<number | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    // require that username availability was confirmed before submitting
+    if (usernameAvailable !== true) {
+      setError('Please choose an available username before signing up')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -37,11 +45,13 @@ export default function SignupPage() {
         return
       }
 
+      // Normalize username to lowercase and include in user metadata
+      const normalized = username.trim().toLowerCase()
       // sign up and include username in user metadata
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username } }
+        options: { data: { username: normalized } }
       })
 
       if (signUpError) {
@@ -50,13 +60,80 @@ export default function SignupPage() {
         return
       }
 
-      router.push('/signup/confirm')
+        // If signUp returned a user id (some Supabase setups do), create the profile now.
+        // Otherwise the user likely must confirm their email first and the auth user record
+        // won't exist yet — skip creating the profile and redirect to confirmation.
+        const userId = data?.user?.id
+        if (userId) {
+          try {
+            const res = await fetch('/api/create-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: userId, email, username: normalized })
+            })
+
+            if (!res.ok) {
+              const payload = await res.json().catch(() => ({}))
+              setError(payload?.error || 'Failed to create profile')
+              setLoading(false)
+              return
+            }
+          } catch (err: any) {
+            setError(err?.message || 'Failed to create profile')
+            setLoading(false)
+            return
+          }
+        }
+
+        // proceed to the confirmation page regardless
+        router.push('/signup/confirm')
     } catch (err: any) {
       setError(err.message || 'Signup failed')
     } finally {
       setLoading(false)
     }
   }
+
+  // debounce username availability checks
+  useEffect(() => {
+    setUsernameAvailable(null)
+    if (usernameCheckRef.current) {
+      window.clearTimeout(usernameCheckRef.current)
+    }
+
+    if (!username || username.trim().length < 3) {
+      setCheckingUsername(false)
+      return
+    }
+
+    setCheckingUsername(true)
+    // debounce 400ms
+    usernameCheckRef.current = window.setTimeout(async () => {
+      try {
+        const res = await fetch('/api/username-available', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username })
+        })
+        if (res.ok) {
+          const payload = await res.json()
+          setUsernameAvailable(Boolean(payload?.available))
+        } else {
+          setUsernameAvailable(null)
+        }
+      } catch (e) {
+        setUsernameAvailable(null)
+      } finally {
+        setCheckingUsername(false)
+      }
+    }, 400)
+
+    return () => {
+      if (usernameCheckRef.current) {
+        window.clearTimeout(usernameCheckRef.current)
+      }
+    }
+  }, [username])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -74,6 +151,11 @@ export default function SignupPage() {
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input id="username" type="text" placeholder="choose_a_username" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <div className="text-sm mt-1">
+                {checkingUsername && <span className="text-muted-foreground">Checking availability…</span>}
+                {!checkingUsername && usernameAvailable === true && <span className="text-success">Username is available</span>}
+                {!checkingUsername && usernameAvailable === false && <span className="text-destructive">Username is already taken</span>}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -89,8 +171,12 @@ export default function SignupPage() {
             </div>
             {error && <div className="text-sm text-destructive">{error}</div>}
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full" type="submit" disabled={loading}>
+            <CardFooter className="flex flex-col gap-4">
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={loading || checkingUsername || usernameAvailable === false}
+            >
               {loading ? 'Creating account…' : 'Sign Up'}
             </Button>
             <div className="text-center text-sm text-muted-foreground">

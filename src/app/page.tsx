@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Brain } from 'lucide-react'
-import supabase from '@/lib/supabaseBrowser'
+// The client now posts credentials to a secure server endpoint which
+// resolves username -> email and performs sign-in server-side.
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,47 +22,30 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
     try {
-      if (!supabase) {
-        setError('Authentication is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+      // basic client-side email validation
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) {
+        setError('Please enter a valid email address')
         setLoading(false)
         return
       }
 
-      // If the identifier looks like an email use it directly; otherwise treat it as username
-      let emailToUse = identifier
-
-      if (!identifier.includes('@')) {
-        // try resolving username -> email from profiles table
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', identifier)
-          .single()
-
-        if (profileError || !profileData) {
-          setError('No account found for that username. Try signing in with your email.')
-          setLoading(false)
-          return
-        }
-
-        // @ts-ignore
-        emailToUse = profileData.email
-      }
-
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: emailToUse,
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: identifier.trim(), password }),
       })
 
-      if (signInError) {
-        setError(signInError.message)
+      const payload = await res.json()
+
+      if (!res.ok) {
+        // show server-provided error if available, otherwise generic
+        setError(payload?.error || 'Invalid credentials')
         setLoading(false)
         return
       }
 
-      // successful login
+      // successful login — server returns user/session; proceed to dashboard
       router.push('/dashboard')
     } catch (err: any) {
       setError(err?.message || 'Login failed')
@@ -84,8 +68,8 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="identifier">Email or Username</Label>
-              <Input id="identifier" type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="email or username" />
+              <Label htmlFor="identifier">Email</Label>
+              <Input id="identifier" type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="you@example.com" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
