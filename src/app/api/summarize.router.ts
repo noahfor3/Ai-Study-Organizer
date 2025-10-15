@@ -3,8 +3,9 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { SummarizerService, SummarizeRequest, ValidationError, ProcessingError, HallucinationError } from '../services/summarizer.service';
-import { createModelClient } from '../integrations/modelClient';
+import { SummarizerService, SummarizeRequest, ValidationError, ProcessingError, HallucinationError } from '../../services/summarizer.service';
+import { createModelClient } from '../../integrations/modelClient';
+import logger from '../../lib/logger';
 
 const router = Router();
 
@@ -24,8 +25,8 @@ router.post('/summarize', async (req: Request, res: Response) => {
   const requestId = generateRequestId();
   
   try {
-    // Log request (without full text for security)
-    console.log(`[${requestId}] Summarize request - mode: ${req.body.mode}, text length: ${req.body.text?.length || 0}`);
+  // Log request (without full text for security)
+  logger.log(`[${requestId}] Summarize request - mode: ${req.body.mode}, text length: ${req.body.text?.length || 0}`);
     
     // Validate request body
     const { text, mode, bulletCount, redactPII } = req.body;
@@ -57,8 +58,8 @@ router.post('/summarize', async (req: Request, res: Response) => {
     // Process the request
     const result = await summarizerService.summarize(summarizeRequest);
     
-    // Log success (without content for security)
-    console.log(`[${requestId}] Summarization successful - tokens in: ${result.meta.tokensIn}, tokens out: ${result.meta.tokensOut}`);
+  // Log success (without content for security)
+  logger.info(`[${requestId}] Summarization successful - tokens in: ${result.meta.tokensIn}, tokens out: ${result.meta.tokensOut}`);
     
     // Return success response
     res.status(200).json({
@@ -69,7 +70,7 @@ router.post('/summarize', async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    console.error(`[${requestId}] Summarization error:`, error);
+  logger.error(`[${requestId}] Summarization error:`, error);
     
     if (error instanceof ValidationError) {
       return res.status(400).json({
