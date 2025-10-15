@@ -4,7 +4,8 @@
 
 import express from 'express';
 import cors from 'cors';
-import summarizeRouter from './api/summarize.router';
+import summarizeRouter from './app/api/summarize.router';
+import logger from './lib/logger';
 
 /**
  * Create and configure the Express application
@@ -21,7 +22,7 @@ export function createApp(): express.Application {
   // Request logging middleware
   app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
+    logger.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
     next();
   });
 
@@ -48,7 +49,7 @@ export function createApp(): express.Application {
 
   // Error handling middleware
   app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Unhandled error:', error);
+    logger.error('Unhandled error:', error);
     
     res.status(500).json({
       error: 'Internal Server Error',
