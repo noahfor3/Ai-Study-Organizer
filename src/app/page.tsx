@@ -46,6 +46,17 @@ export default function LoginPage() {
       }
 
       // successful login — server returns user/session; proceed to dashboard
+      try {
+        // if a browser supabase client exists, set the session so client-side checks succeed
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const supabaseClient = require('@/lib/supabaseBrowser').default
+        if (supabaseClient && payload?.session) {
+          await supabaseClient.auth.setSession(payload.session)
+        }
+      } catch (err) {
+        // non-fatal; if we can't set session, still attempt navigation
+      }
+
       router.push('/dashboard')
     } catch (err: any) {
       setError(err?.message || 'Login failed')

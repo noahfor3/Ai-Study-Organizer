@@ -32,7 +32,8 @@ export async function POST(req: Request) {
 
     const emailToUse = raw.toLowerCase()
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+    // Use the anon client for sign-in so the auth flow behaves like a normal client sign-in
+    const { data, error: signInError } = await supabaseAnon.auth.signInWithPassword({
       email: emailToUse,
       password,
     })
