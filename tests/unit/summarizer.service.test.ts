@@ -138,7 +138,7 @@ describe('SummarizerService', () => {
       expect(result.content).toHaveLength(4);
       
       // Check that PII is redacted in all bullets
-      const contentString = result.content.join(' ');
+      const contentString = Array.isArray(result.content) ? result.content.join(' ') : result.content;
       expect(contentString).not.toContain('john.doe@example.com');
       expect(contentString).not.toContain('(555) 123-4567');
     });
