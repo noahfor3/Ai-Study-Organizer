@@ -114,8 +114,8 @@ export class MockModelClient implements ModelClient {
 }
 
 /**
- * Real implementation of ModelClient (stub for future OpenAI integration)
- * This would integrate with actual AI services like OpenAI, Anthropic, etc.
+ * Real implementation of ModelClient using Genkit AI
+ * This integrates with the existing Genkit AI setup
  */
 export class RealModelClient implements ModelClient {
   private config: ModelClientConfig;
@@ -133,10 +133,39 @@ export class RealModelClient implements ModelClient {
     bulletCount?: number;
     temperature?: number;
   }): Promise<string | string[]> {
-    // TODO: Implement real AI model integration
-    // For now, fall back to mock implementation
-    const mockClient = new MockModelClient(this.config);
-    return mockClient.generateSummary(params);
+    try {
+      // Import the existing AI flow
+      const { generateNotes } = await import('../ai/flows/generate-notes-flow');
+      
+      // Map our summarization parameters to the existing flow
+      const noteStyle = params.mode === 'abstract' ? 'comprehensive' : 'bullet-points';
+      
+      const result = await generateNotes({
+        documentContent: params.text,
+        noteStyle: noteStyle as any,
+        focusArea: params.mode === 'abstract' ? 'key concepts and main points' : 'concise bullet points'
+      });
+
+      if (params.mode === 'bullets') {
+        // Convert the notes to bullet points
+        const bullets = result.notes
+          .split('\n')
+          .filter(line => line.trim().startsWith('-') || line.trim().startsWith('•') || line.trim().startsWith('*'))
+          .map(line => line.replace(/^[-•*]\s*/, '').trim())
+          .filter(line => line.length > 0)
+          .slice(0, params.bulletCount || 5);
+        
+        return bullets.length > 0 ? bullets : [result.notes];
+      } else {
+        // Return as abstract
+        return result.notes;
+      }
+    } catch (error) {
+      console.error('Real AI model error:', error);
+      // Fall back to mock implementation
+      const mockClient = new MockModelClient(this.config);
+      return mockClient.generateSummary(params);
+    }
   }
 }
 
