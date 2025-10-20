@@ -5,6 +5,7 @@
 import express from 'express';
 import cors from 'cors';
 import summarizeRouter from './app/api/summarize.router';
+import quizRouter from './app/api/quiz.router';
 import logger from './lib/logger';
 
 /**
@@ -38,6 +39,7 @@ export function createApp(): express.Application {
 
   // API routes
   app.use('/api', summarizeRouter);
+  app.use('/api/quiz', quizRouter);
 
   // 404 handler
   app.use('*', (req, res) => {

@@ -9,6 +9,21 @@ export interface ModelClient {
     bulletCount?: number;
     temperature?: number;
   }): Promise<string | string[]>;
+
+  generateQuizQuestion(params: {
+    content: string;
+    type: 'mcq' | 'true_false' | 'short_answer';
+    difficulty: 'easy' | 'medium' | 'hard';
+    includeExplanations: boolean;
+    seed?: string;
+  }): Promise<{
+    stem: string;
+    options?: string[];
+    correctAnswer: string | number | boolean;
+    explanation?: string;
+    sourceSection?: string;
+    tokensUsed?: number;
+  }>;
 }
 
 export interface ModelClientConfig {
@@ -111,6 +126,100 @@ export class MockModelClient implements ModelClient {
 
     return bullets.slice(0, bulletCount);
   }
+
+  async generateQuizQuestion(params: {
+    content: string;
+    type: 'mcq' | 'true_false' | 'short_answer';
+    difficulty: 'easy' | 'medium' | 'hard';
+    includeExplanations: boolean;
+    seed?: string;
+  }): Promise<{
+    stem: string;
+    options?: string[];
+    correctAnswer: string | number | boolean;
+    explanation?: string;
+    sourceSection?: string;
+    tokensUsed?: number;
+  }> {
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const { type, difficulty, includeExplanations } = params;
+    
+    // Extract content for question generation
+    const sentences = params.content.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    const sourceSection = this.extractSection(params.content);
+
+    if (type === 'mcq') {
+      return this.generateMockMCQ(sentences, difficulty, includeExplanations, sourceSection);
+    } else if (type === 'true_false') {
+      return this.generateMockTrueFalse(sentences, difficulty, includeExplanations, sourceSection);
+    } else {
+      return this.generateMockShortAnswer(sentences, difficulty, includeExplanations, sourceSection);
+    }
+  }
+
+  private generateMockMCQ(sentences: string[], difficulty: string, includeExplanations: boolean, sourceSection: string) {
+    const stem = sentences[0]?.trim() || 'What is the main topic discussed?';
+    const correctAnswer = sentences[1]?.trim() || 'The main concept';
+    
+    const options = [
+      correctAnswer,
+      sentences[2]?.trim() || 'Alternative concept A',
+      sentences[3]?.trim() || 'Alternative concept B', 
+      sentences[4]?.trim() || 'Alternative concept C'
+    ].slice(0, 4);
+
+    return {
+      stem: `Which of the following best describes: ${stem}?`,
+      options,
+      correctAnswer: 0,
+      explanation: includeExplanations ? `The correct answer is based on the content: ${correctAnswer}` : undefined,
+      sourceSection,
+      tokensUsed: 50
+    };
+  }
+
+  private generateMockTrueFalse(sentences: string[], difficulty: string, includeExplanations: boolean, sourceSection: string) {
+    const statement = sentences[0]?.trim() || 'This concept is important';
+    const isTrue = Math.random() > 0.5;
+
+    return {
+      stem: statement,
+      correctAnswer: isTrue,
+      explanation: includeExplanations ? `This statement is ${isTrue ? 'true' : 'false'} based on the content.` : undefined,
+      sourceSection,
+      tokensUsed: 30
+    };
+  }
+
+  private generateMockShortAnswer(sentences: string[], difficulty: string, includeExplanations: boolean, sourceSection: string) {
+    const question = sentences[0]?.trim() || 'What is the main concept?';
+    const answer = sentences[1]?.split(' ').slice(0, 3).join(' ') || 'Main concept';
+
+    return {
+      stem: question,
+      correctAnswer: answer,
+      explanation: includeExplanations ? `The answer is: ${answer}` : undefined,
+      sourceSection,
+      tokensUsed: 25
+    };
+  }
+
+  private extractSection(content: string): string {
+    // Try to extract section headers
+    const headerMatch = content.match(/^#+\s+(.+)$/m);
+    if (headerMatch) {
+      return headerMatch[1];
+    }
+    
+    const capsMatch = content.match(/^[A-Z][A-Z\s]+$/m);
+    if (capsMatch) {
+      return capsMatch[0];
+    }
+
+    return 'General Content';
+  }
 }
 
 /**
@@ -166,6 +275,126 @@ export class RealModelClient implements ModelClient {
       const mockClient = new MockModelClient(this.config);
       return mockClient.generateSummary(params);
     }
+  }
+
+  async generateQuizQuestion(params: {
+    content: string;
+    type: 'mcq' | 'true_false' | 'short_answer';
+    difficulty: 'easy' | 'medium' | 'hard';
+    includeExplanations: boolean;
+    seed?: string;
+  }): Promise<{
+    stem: string;
+    options?: string[];
+    correctAnswer: string | number | boolean;
+    explanation?: string;
+    sourceSection?: string;
+    tokensUsed?: number;
+  }> {
+    try {
+      // Import the existing AI flow
+      const { generateNotes } = await import('../ai/flows/generate-notes-flow');
+      
+      // Create a specialized prompt for quiz generation
+      const quizPrompt = this.buildQuizPrompt(params);
+      
+      const result = await generateNotes({
+        documentContent: quizPrompt,
+        noteStyle: 'comprehensive' as any,
+        focusArea: `Generate a ${params.type} question with ${params.difficulty} difficulty`
+      });
+
+      // Parse the AI response to extract quiz components
+      return this.parseQuizResponse(result.notes, params.type);
+    } catch (error) {
+      console.error('Real AI quiz generation error:', error);
+      // Fall back to mock implementation
+      const mockClient = new MockModelClient(this.config);
+      return mockClient.generateQuizQuestion(params);
+    }
+  }
+
+  private buildQuizPrompt(params: {
+    content: string;
+    type: 'mcq' | 'true_false' | 'short_answer';
+    difficulty: 'easy' | 'medium' | 'hard';
+    includeExplanations: boolean;
+  }): string {
+    const difficultyGuidance = {
+      easy: 'Focus on basic definitions, facts, and straightforward concepts',
+      medium: 'Include application of concepts and moderate complexity',
+      hard: 'Require synthesis, analysis, and complex reasoning'
+    };
+
+    const typeGuidance = {
+      mcq: 'Generate a multiple choice question with exactly 4 options, where only 1 is correct. Make distractors plausible but clearly wrong.',
+      true_false: 'Generate a true/false statement that is clearly true or false based on the content.',
+      short_answer: 'Generate a short answer question requiring a brief, specific response (1-3 words or a short phrase).'
+    };
+
+    return `Based on the following content, generate a ${params.difficulty} difficulty ${params.type} question.
+
+${typeGuidance[params.type]}
+
+${difficultyGuidance[params.difficulty]}
+
+${params.includeExplanations ? 'Include a brief explanation citing the relevant part of the source content.' : ''}
+
+Content:
+${params.content}
+
+Requirements:
+- Question must be answerable from the provided content
+- No "all of the above" or "none of the above" options
+- Avoid ambiguous wording
+- Ensure exactly one correct answer
+- Ground all content in the source material
+
+Format your response as JSON with the following structure:
+{
+  "stem": "question text",
+  "options": ["option1", "option2", "option3", "option4"], // only for MCQ
+  "correctAnswer": "correct answer or index",
+  "explanation": "explanation text", // if requested
+  "sourceSection": "section title or topic",
+  "tokensUsed": number
+}`;
+  }
+
+  private parseQuizResponse(response: string, type: string): {
+    stem: string;
+    options?: string[];
+    correctAnswer: string | number | boolean;
+    explanation?: string;
+    sourceSection?: string;
+    tokensUsed?: number;
+  } {
+    try {
+      // Try to parse JSON response
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          stem: parsed.stem || 'Generated question',
+          options: parsed.options,
+          correctAnswer: parsed.correctAnswer,
+          explanation: parsed.explanation,
+          sourceSection: parsed.sourceSection || 'General Content',
+          tokensUsed: parsed.tokensUsed || 50
+        };
+      }
+    } catch (error) {
+      console.warn('Failed to parse AI quiz response as JSON:', error);
+    }
+
+    // Fallback parsing for non-JSON responses
+    return {
+      stem: response.split('\n')[0] || 'Generated question',
+      correctAnswer: type === 'true_false' ? true : 'Generated answer',
+      explanation: response.includes('explanation') ? response : undefined,
+      sourceSection: 'General Content',
+      tokensUsed: 50
+    };
   }
 }
 
