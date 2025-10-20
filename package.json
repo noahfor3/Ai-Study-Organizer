@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --coverageThreshold.global.statements=80 --coverageThreshold.global.branches=80 --coverageThreshold.global.functions=80 --coverageThreshold.global.lines=80",
     "test:unit": "jest --runInBand --testPathPattern=tests/unit",
     "test:integration": "jest --runInBand --testPathPattern=tests/integration",
     "api:dev": "ts-node-dev --project tsconfig.server.json src/server.ts",
