@@ -1,3 +1,4 @@
+// app/api/auth/login/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -5,9 +6,9 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-// Create both clients; prefer the service-role client for privileged reads.
+// Create both clients; prefer the service-role client for privileged operations.
 const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-const supabase = SERVICE_ROLE_KEY ? createClient(SUPABASE_URL, SERVICE_ROLE_KEY) : supabaseAnon
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY || SUPABASE_ANON_KEY)
 
 type ReqBody = {
   identifier?: string
@@ -24,15 +25,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 })
     }
 
-    // Enforce email-only login. Validate and normalize to lowercase.
+    let emailToUse: string
+
+    // Check if identifier is an email
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)
-    if (!isEmail) {
-      return NextResponse.json({ error: 'Please sign in with your email address' }, { status: 400 })
+    if (isEmail) {
+      emailToUse = raw.toLowerCase()
+    } else {
+      // Assume it's a username; fetch associated email from profiles table
+      // Assuming you have a 'profiles' table with columns: id (uuid referencing auth.users.id), username (text, unique)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', raw)
+        .single()
+
+      if (error || !data) {
+        console.warn('[auth/login] Username not found', { username: raw, error: error?.message })
+        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      }
+
+      // Get user email via admin API (requires service role)
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(data.id)
+
+      if (userError || !userData?.user?.email) {
+        console.warn('[auth/login] Failed to fetch user email', { userId: data.id, error: userError?.message })
+        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      }
+
+      emailToUse = userData.user.email
     }
 
-    const emailToUse = raw.toLowerCase()
-
-    // Use the anon client for sign-in so the auth flow behaves like a normal client sign-in
+    // Use the anon client for sign-in to mimic normal client behavior
     const { data, error: signInError } = await supabaseAnon.auth.signInWithPassword({
       email: emailToUse,
       password,
