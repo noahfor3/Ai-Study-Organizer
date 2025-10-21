@@ -4,8 +4,7 @@
 
 import express from 'express';
 import cors from 'cors';
-import summarizeRouter from './app/api/summarize.router';
-import logger from './lib/logger';
+import summarizeRouter from './app/(app)/api/summarize.router';
 
 /**
  * Create and configure the Express application
