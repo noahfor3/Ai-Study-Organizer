@@ -1,62 +1,110 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import supabaseClient from "@/lib/supabaseBrowser"
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-export default function ResetPassword() {
-  console.log("RESET PAGE LOADED")
+function ResetPasswordInner() {
   const router = useRouter()
-  const sp = useSearchParams()
-  const type = sp.get("type") // must be "recovery"
-  const [p1, setP1] = useState("")
-  const [p2, setP2] = useState("")
-  const [err, setErr] = useState<string | null>(null)
-  const [msg, setMsg] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+
+  const type = searchParams.get("type")
 
   useEffect(() => {
-    if (type !== "recovery") setErr("Invalid or expired reset link.")
+    if (type !== "recovery") {
+      setError("Invalid or expired reset link.")
+    }
   }, [type])
 
-  async function onSubmit(e: React.FormEvent) {
+  async function handleReset(e: React.FormEvent) {
     e.preventDefault()
-    setErr(null); setMsg(null)
-    if (p1 !== p2) return setErr("Passwords do not match.")
-    if (p1.length < 6) return setErr("Password must be at least 6 characters.")
+    setError(null)
+    setMessage(null)
+    setLoading(true)
 
-    const { error } = await sb.auth.updateUser({ password: p1 })
-    if (error) setErr(error.message)
-    else {
-      setMsg("Password updated. Redirecting to login…")
-      setTimeout(()=>router.push("/"), 1500)
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      setLoading(false)
+      return
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters")
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({ password })
+      if (error) {
+        setError(error.message)
+      } else {
+        setMessage("Password updated successfully! Redirecting to login...")
+        setTimeout(() => router.push("/"), 2500)
+      }
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong.")
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <main style={{maxWidth:420, margin:"40px auto", fontFamily:"sans-serif"}}>
-      <h1>Reset Password</h1>
-      <form onSubmit={onSubmit} style={{display:"grid", gap:8, marginTop:12}}>
-        <input
-          type="password"
-          placeholder="new password"
-          value={p1}
-          onChange={e=>setP1(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="confirm password"
-          value={p2}
-          onChange={e=>setP2(e.target.value)}
-        />
-        <button type="submit">Set new password</button>
-      </form>
-      {err && <p style={{color:"crimson"}}>{err}</p>}
-      {msg && <p style={{color:"seagreen"}}>{msg}</p>}
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-xl">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-3xl font-bold">Reset Password</CardTitle>
+          <CardDescription>Enter your new password below.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleReset}>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="password">New Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="******"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="******"
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            {message && <p className="text-sm text-green-600">{message}</p>}
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full" type="submit" disabled={loading}>
+              {loading ? "Resetting..." : "Reset Password"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
     </main>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+      <ResetPasswordInner />
+    </Suspense>
   )
 }
