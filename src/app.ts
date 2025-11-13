@@ -1,15 +1,21 @@
 /**
  * Express application setup and configuration
  */
-
+/*
 import express from 'express';
 import cors from 'cors';
+<<<<<<< HEAD
 import summarizeRouter from './app/(app)/api/summarize.router';
-
+=======
+import summarizeRouter from './app/api/summarize.router';
+import logger from './lib/logger';
+>>>>>>> origin/main
+*/
 /**
  * Create and configure the Express application
  * @returns Configured Express app
  */
+/*
 export function createApp(): express.Application {
   const app = express();
 
@@ -21,7 +27,7 @@ export function createApp(): express.Application {
   // Request logging middleware
   app.use((req, res, next) => {
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
+    logger.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
     next();
   });
 
@@ -48,7 +54,7 @@ export function createApp(): express.Application {
 
   // Error handling middleware
   app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Unhandled error:', error);
+    logger.error('Unhandled error:', error);
     
     res.status(500).json({
       error: 'Internal Server Error',
@@ -58,3 +64,33 @@ export function createApp(): express.Application {
 
   return app;
 }
+*/
+
+/**
+ * Express application setup and configuration
+ */
+
+import express from 'express';
+import cors from 'cors';
+import summarizeRouter from './app/api/summarize.router';
+import logger from './lib/logger';
+
+/**
+ * Create and configure the Express application
+ * @returns Configured Express app
+ */
+export function createApp(): express.Application {
+  const app = express();
+
+  // Middleware
+  app.use(cors());
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+  // Request logging middleware
+  app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    logger.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
+    next();
+  });
+  // Health check endpoint

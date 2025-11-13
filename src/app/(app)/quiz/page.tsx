@@ -215,3 +215,6 @@ export default function QuizPage() {
     </div>
   );
 }
+
+
+// End of file
