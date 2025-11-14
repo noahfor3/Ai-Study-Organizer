@@ -93,4 +93,5 @@ export function createApp(): express.Application {
     logger.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
     next();
   });
+
   // Health check endpoint
