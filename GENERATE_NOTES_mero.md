@@ -62,7 +62,7 @@ npm run dev
 
 Open the app in your browser at:
 
-http://localhost:3000/(app)/generate-notes
+i.g.: http://localhost:3000/(app)/generate-notes
 
 
 Paste your study material, select a note style, optionally enter a focus area, and click Generate Notes.
