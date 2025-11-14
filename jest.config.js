@@ -34,6 +34,9 @@ module.exports = {
         '<rootDir>/tests/e2e/**/*.{test,spec}.ts'
       ],
       setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
       transform: {
         '^.+\\.ts$': 'ts-jest',
       },
