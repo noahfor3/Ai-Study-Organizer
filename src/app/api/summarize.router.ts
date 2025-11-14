@@ -126,3 +126,7 @@ function generateRequestId(): string {
 }
 
 export default router;
+
+// Also export as named export for CommonJS compatibility
+module.exports = router;
+module.exports.default = router;
