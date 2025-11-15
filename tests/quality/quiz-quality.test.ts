@@ -202,7 +202,9 @@ describe('Quiz Quality Tests (QZ-01 to QZ-15)', () => {
 
       saQuestions.forEach(question => {
         expect(typeof question.correctAnswer).toBe('string');
-        expect(question.correctAnswer.length).toBeGreaterThan(0);
+        if (typeof question.correctAnswer === 'string') {
+          expect(question.correctAnswer.length).toBeGreaterThan(0);
+        }
       });
     });
   });

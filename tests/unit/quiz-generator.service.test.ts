@@ -146,7 +146,9 @@ describe('QuizGeneratorService', () => {
       const saQuestions = result.questions.filter(q => q.type === 'short_answer');
       saQuestions.forEach(question => {
         expect(typeof question.correctAnswer).toBe('string');
-        expect(question.correctAnswer.length).toBeGreaterThan(0);
+        if (typeof question.correctAnswer === 'string') {
+          expect(question.correctAnswer.length).toBeGreaterThan(0);
+        }
       });
     });
 

@@ -2,11 +2,11 @@
  * E2E test: start the real Express server and perform basic health checks
  */
 
-import supertest, { type SuperTest, type Test } from 'supertest'
+import supertest from 'supertest'
 import { createApp } from '../../src/app'
 
 describe('E2E: start server and check health endpoints', () => {
-  let request: SuperTest<Test>
+  let request: ReturnType<typeof supertest>
 
   beforeAll(() => {
     process.env.PORT = '0'

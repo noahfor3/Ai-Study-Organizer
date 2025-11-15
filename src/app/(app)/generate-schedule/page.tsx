@@ -459,8 +459,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 
+type ClassEntry = {
+  name: string;
+  days: string;
+  startTime: string;
+  endTime: string;
+};
+
 export default function GenerateSchedulePage() {
-  const [classes, setClasses] = useState([
+  const [classes, setClasses] = useState<ClassEntry[]>([
     { name: "", days: "", startTime: "", endTime: "" },
   ]);
   const [loading, setLoading] = useState(false);
@@ -475,7 +482,7 @@ export default function GenerateSchedulePage() {
     setClasses(classes.filter((_, i) => i !== index));
   };
 
-  const handleChange = (index: number, field: string, value: string) => {
+  const handleChange = (index: number, field: keyof ClassEntry, value: string) => {
     const updated = [...classes];
     updated[index][field] = value;
     setClasses(updated);

@@ -325,7 +325,7 @@ Format your response as JSON with the following structure:
     return `q_${type}_${timestamp}_${random}`;
   }
 
-  validateQuestion(question: any): string[] {
+  validateQuestion(question: QuizQuestion): string[] {
     const errors: string[] = [];
 
     if (!question.id) {
