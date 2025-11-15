@@ -106,7 +106,7 @@ export class MockModelClient implements ModelClient {
       if (sentence.length > 0) {
         // Clean up the sentence and make it bullet-friendly
         let bullet = sentence
-          .replace(/^[•*\-]\s*/, '') // Remove existing bullet markers
+          .replace(/^[-•*]\s*/, '') // Remove existing bullet markers
           .replace(/^\d+\.\s*/, '') // Remove numbered lists
           .trim();
         

@@ -315,7 +315,7 @@ Format your response as JSON with the following structure:
     return `quiz_${timestamp}_${random}${seed ? `_${seed}` : ''}`;
   }
 
-  private generateQuestionId(type: QuestionType, seed?: string, index = 0): string {
+  private generateQuestionId(type: QuestionType, seed?: string, _index = 0): string {
     if (seed) {
       return `q_${type}_${seed}`;
     }
