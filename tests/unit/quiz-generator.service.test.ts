@@ -1,6 +1,6 @@
 import { QuizGeneratorService } from '../../src/services/quiz-generator.service';
 import { MockModelClient } from '../../src/integrations/modelClient';
-import { QuizRequest } from '../../src/types/quiz';
+import { QuizRequest, QuizQuestion } from '../../src/types/quiz';
 
 const createMetadata = () => ({
   tokensUsed: 50,
@@ -204,7 +204,7 @@ describe('QuizGeneratorService', () => {
 
   describe('validateQuestion', () => {
     it('should validate correct MCQ question', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-1',
         type: 'mcq',
         stem: 'What is machine learning?',
@@ -219,7 +219,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should validate correct T/F question', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-2',
         type: 'true_false',
         stem: 'Machine learning is a subset of AI.',
@@ -233,7 +233,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should validate correct short answer question', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-3',
         type: 'short_answer',
         stem: 'What are the three types of machine learning?',
@@ -247,7 +247,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should catch MCQ with wrong number of options', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-4',
         type: 'mcq',
         stem: 'What is machine learning?',
@@ -262,7 +262,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should catch MCQ with invalid correct answer index', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-5',
         type: 'mcq',
         stem: 'What is machine learning?',
@@ -277,7 +277,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should catch T/F with non-boolean answer', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-6',
         type: 'true_false',
         stem: 'Machine learning is a subset of AI.',
@@ -291,7 +291,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should catch short answer with empty answer', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-7',
         type: 'short_answer',
         stem: 'What are the three types of machine learning?',
@@ -305,7 +305,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should catch trick question patterns', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-8',
         type: 'mcq',
         stem: 'Which of the following is correct? All of the above.',
@@ -320,7 +320,7 @@ describe('QuizGeneratorService', () => {
     });
 
     it('should catch short question stems', () => {
-      const question = {
+      const question: QuizQuestion = {
         id: 'test-9',
         type: 'mcq',
         stem: 'What?',
