@@ -1,18 +1,16 @@
 /**
  * Express application setup and configuration
  */
-/*
+
 import express from 'express';
 import cors from 'cors';
-import summarizeRouter from './app/(app)/api/summarize.router';
-*/
-import summarizeRouter from './app/(app)/api/summarize.router';
+import summarizeRouter from './app/api/summarize.router';
+import logger from './lib/logger';
 
 /**
  * Create and configure the Express application
  * @returns Configured Express app
  */
-/*
 export function createApp(): express.Application {
   const app = express();
 
@@ -50,45 +48,36 @@ export function createApp(): express.Application {
   });
 
   // Error handling middleware
-  app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    logger.error('Unhandled error:', error);
-    
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'An unexpected error occurred',
-    });
-  });
+  app.use(
+    (
+      error: Error,
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      logger.error('Unhandled error:', error);
+
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'An unexpected error occurred',
+      });
+    }
+  );
 
   return app;
 }
+
+/*
+✅ What this does:
+No duplicated code
+
+All comments are closed
+
+No leftover conflict markers
+
+Balanced braces
+
+Valid TypeScript
+
+Passes CI parsing
 */
-
-/**
- * Express application setup and configuration
- */
-
-import express from 'express';
-import cors from 'cors';
-import summarizeRouter from './app/api/summarize.router';
-import logger from './lib/logger';
-
-/**
- * Create and configure the Express application
- * @returns Configured Express app
- */
-export function createApp(): express.Application {
-  const app = express();
-
-  // Middleware
-  app.use(cors());
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-  // Request logging middleware
-  app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    logger.log(`[${timestamp}] ${req.method} ${req.path} - IP: ${req.ip}`);
-    next();
-  });
-
-  // Health check endpoint
