@@ -78,8 +78,12 @@ export default function SignupPage() {
               setLoading(false)
               return
             }
-          } catch (err: any) {
-            setError(err?.message || 'Failed to create profile')
+          } catch (error: unknown) {
+            if (error instanceof Error) {
+              setError(error.message || 'Failed to create profile')
+            } else {
+              setError('Failed to create profile')
+            }
             setLoading(false)
             return
           }
@@ -87,8 +91,12 @@ export default function SignupPage() {
 
         // proceed to the confirmation page regardless
         router.push('/signup/confirm')
-    } catch (err: any) {
-      setError(err.message || 'Signup failed')
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'Signup failed')
+      } else {
+        setError('Signup failed')
+      }
     } finally {
       setLoading(false)
     }
@@ -121,7 +129,7 @@ export default function SignupPage() {
         } else {
           setUsernameAvailable(null)
         }
-      } catch (e) {
+      } catch {
         setUsernameAvailable(null)
       } finally {
         setCheckingUsername(false)

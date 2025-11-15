@@ -239,8 +239,7 @@ ${input.classes
       prompt,
     });
 
-    // Depending on the Genkit version, text output can be under result.output_text or result.text()
-    const schedule = result.output_text || result.text?.() || "No schedule generated.";
+    const schedule = result.text ?? "No schedule generated.";
     return { schedule };
   } catch (error: any) {
     console.error("❌ Gemini generation error:", error);

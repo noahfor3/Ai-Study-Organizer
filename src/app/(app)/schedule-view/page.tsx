@@ -42,7 +42,7 @@ const groupEventsByDate = (events: typeof mockEvents) => {
 const DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
 export default function ScheduleViewPage() {
-  const [events, setEvents] = React.useState(mockEvents);
+  const [events] = React.useState(mockEvents);
   const [isEditing, setIsEditing] = React.useState(false);
 
   const groupedEvents = groupEventsByDate(events);

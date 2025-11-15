@@ -2,7 +2,7 @@
  * Unit tests for the summarizer service
  */
 
-import { SummarizerService, ValidationError, ProcessingError, HallucinationError } from '../../src/services/summarizer.service';
+import { SummarizerService, ValidationError, HallucinationError } from '../../src/services/summarizer.service';
 import { MockModelClient } from '../../src/integrations/modelClient';
 
 describe('SummarizerService', () => {

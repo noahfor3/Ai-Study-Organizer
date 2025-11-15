@@ -8,7 +8,6 @@
  * - GenerateFlashcardsOutput - The return type for the generateFlashcards function.
  */
 
-import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const FlashcardSchema = z.object({
@@ -78,6 +77,7 @@ export async function generateFlashcards(input: GenerateFlashcardsInput): Promis
     return { flashcards: pseudoFlashcards.flashcards.slice(0, 2) };
   }
 
+  GenerateFlashcardsOutputSchema.parse(pseudoFlashcards);
   return pseudoFlashcards;
 
   // Original AI call (now bypassed for pseudo-text):

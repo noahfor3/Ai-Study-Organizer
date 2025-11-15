@@ -2,17 +2,15 @@
  * E2E test: start the real Express server and perform basic health checks
  */
 
+import supertest from 'supertest'
+import { createApp } from '../../src/app'
+
 describe('E2E: start server and check health endpoints', () => {
-  let server: any
-    let request: any
+  let request: ReturnType<typeof supertest>
 
   beforeAll(() => {
     process.env.PORT = '0'
-    // start server after setting env
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { createApp } = require('../../src/app')
     const app = createApp()
-    const supertest = require('supertest')
     request = supertest(app)
   })
 

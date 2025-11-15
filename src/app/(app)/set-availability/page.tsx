@@ -12,14 +12,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 export default function SetAvailabilityPage() {
   const [dates, setDates] = React.useState<Date[] | undefined>([]);
 
-  const handleDayClick = (day: Date, { selected }: { selected: boolean }) => {
-    if (selected) {
-      setDates((prevDates) => prevDates?.filter(d => d.getTime() !== day.getTime()));
-    } else {
-      setDates((prevDates) => [...(prevDates || []), day]);
-    }
-  };
-  
   // Simple footer to display selected dates for mockup purposes
   const footer = dates && dates.length > 0 ? (
     <p className="text-sm text-muted-foreground mt-2">
