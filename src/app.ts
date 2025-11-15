@@ -50,7 +50,7 @@ export function createApp(): express.Application {
   });
 
   // Error handling middleware
-  app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((error: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error('Unhandled error:', error);
     
     res.status(500).json({

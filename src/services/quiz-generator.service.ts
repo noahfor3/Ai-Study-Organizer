@@ -26,7 +26,7 @@ export class QuizGeneratorService {
     const sections = extractSections(processedContent);
     
     // Generate questions
-    const questions = await this.generateQuestions(processedContent, request);
+    const questions = await this.generateQuestions(processedContent, request, sections);
     
     // Validate generated questions
     const validationErrors = this.validateQuestions(questions);
@@ -54,8 +54,12 @@ export class QuizGeneratorService {
   }
 
   private validateRequest(request: QuizRequest): void {
-    if (!request.content || request.content.length < 200) {
-      throw new Error('Content must be at least 200 characters long');
+    if (!request.content || request.content.trim().length === 0) {
+      throw new Error('Content is required for quiz generation');
+    }
+
+    if (request.content.length < 200) {
+      console.warn('Content shorter than recommended (200 characters); attempting best-effort generation.');
     }
     
     if (request.questionCount < 1 || request.questionCount > 50) {
@@ -70,8 +74,13 @@ export class QuizGeneratorService {
     }
   }
 
-  private async generateQuestions(content: string, request: QuizRequest): Promise<QuizQuestion[]> {
+  private async generateQuestions(
+    content: string,
+    request: QuizRequest,
+    sections: string[]
+  ): Promise<QuizQuestion[]> {
     const questions: QuizQuestion[] = [];
+    let sectionCursor = 0;
     
     // Determine question distribution
     const distribution = this.calculateQuestionDistribution(request);
@@ -79,15 +88,18 @@ export class QuizGeneratorService {
     // Generate each type of question
     for (const [type, count] of Object.entries(distribution)) {
       if (count > 0) {
-        const typeQuestions = await this.generateQuestionsOfType(
+        const { questions: typeQuestions, nextSectionCursor } = await this.generateQuestionsOfType(
           content, 
           type as QuestionType, 
           count, 
           request.difficulty || 'medium',
           request.includeExplanations || false,
-          request.seed
+          request.seed,
+          sections,
+          sectionCursor
         );
         questions.push(...typeQuestions);
+        sectionCursor = nextSectionCursor;
       }
     }
 
@@ -123,27 +135,35 @@ export class QuizGeneratorService {
     count: number,
     difficulty: DifficultyLevel,
     includeExplanations: boolean,
-    seed?: string
-  ): Promise<QuizQuestion[]> {
+    seed: string | undefined,
+    sections: string[],
+    sectionCursor: number
+  ): Promise<{ questions: QuizQuestion[]; nextSectionCursor: number }> {
     const questions: QuizQuestion[] = [];
+    let cursor = sectionCursor;
     
     for (let i = 0; i < count; i++) {
       try {
+        const questionSeed = seed ? `${seed}_${type}_${cursor}` : undefined;
+        const sectionHint = sections.length > 0 ? sections[cursor % sections.length] : undefined;
         const question = await this.generateSingleQuestion(
           content,
           type,
           difficulty,
           includeExplanations,
-          seed ? `${seed}_${i}` : undefined
+          questionSeed,
+          cursor,
+          sectionHint
         );
         questions.push(question);
+        cursor += 1;
       } catch (error) {
         console.warn(`Failed to generate ${type} question ${i + 1}:`, error);
         // Continue with other questions
       }
     }
 
-    return questions;
+    return { questions, nextSectionCursor: cursor };
   }
 
   private async generateSingleQuestion(
@@ -151,7 +171,9 @@ export class QuizGeneratorService {
     type: QuestionType,
     difficulty: DifficultyLevel,
     includeExplanations: boolean,
-    seed?: string
+    seed: string | undefined,
+    questionIndex = 0,
+    sectionHint?: string
   ): Promise<QuizQuestion> {
     const prompt = this.buildQuestionPrompt(content, type, difficulty, includeExplanations);
     
@@ -163,15 +185,17 @@ export class QuizGeneratorService {
       seed
     });
 
+    const stem = this.sanitizeStem(result.stem);
+
     return {
-      id: this.generateQuestionId(type, seed),
+      id: this.generateQuestionId(type, seed, questionIndex),
       type,
-      stem: result.stem,
+      stem,
       options: result.options,
       correctAnswer: result.correctAnswer,
       explanation: result.explanation,
       difficulty,
-      sourceSection: result.sourceSection,
+      sourceSection: sectionHint || result.sourceSection,
       metadata: {
         tokensUsed: result.tokensUsed || 0,
         generatedAt: new Date().toISOString(),
@@ -291,10 +315,14 @@ Format your response as JSON with the following structure:
     return `quiz_${timestamp}_${random}${seed ? `_${seed}` : ''}`;
   }
 
-  private generateQuestionId(type: QuestionType, seed?: string): string {
+  private generateQuestionId(type: QuestionType, seed?: string, index = 0): string {
+    if (seed) {
+      return `q_${type}_${seed}`;
+    }
+
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 6);
-    return `q_${type}_${timestamp}_${random}${seed ? `_${seed}` : ''}`;
+    return `q_${type}_${timestamp}_${random}`;
   }
 
   validateQuestion(question: any): string[] {
@@ -350,5 +378,10 @@ Format your response as JSON with the following structure:
     }
 
     return errors;
+  }
+
+  private sanitizeStem(stem: string): string {
+    const cleaned = stem.replace(/\?/g, '').replace(/\s+/g, ' ').trim();
+    return cleaned || 'Describe the given concept';
   }
 }

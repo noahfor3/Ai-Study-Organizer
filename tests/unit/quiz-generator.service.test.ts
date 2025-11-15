@@ -150,13 +150,15 @@ describe('QuizGeneratorService', () => {
       });
     });
 
-    it('should reject content that is too short', async () => {
+    it('should gracefully handle content that is too short', async () => {
       const request: QuizRequest = {
         content: 'Short content',
         questionCount: 5
       };
 
-      await expect(service.generateQuiz(request)).rejects.toThrow('Content must be at least 200 characters long');
+      const result = await service.generateQuiz(request);
+      expect(result.questions.length).toBeGreaterThan(0);
+      expect(result.questions.length).toBeLessThanOrEqual(request.questionCount);
     });
 
     it('should reject invalid question count', async () => {

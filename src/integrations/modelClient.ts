@@ -64,7 +64,7 @@ export class MockModelClient implements ModelClient {
     }
   }
 
-  private generateAbstract(text: string, temperature: number = 0): string {
+  private generateAbstract(text: string, _temperature: number = 0): string {
     // Extract key sentences and create a coherent abstract
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
     
@@ -89,7 +89,7 @@ export class MockModelClient implements ModelClient {
     return abstract;
   }
 
-  private generateBullets(text: string, bulletCount: number, temperature: number = 0): string[] {
+  private generateBullets(text: string, bulletCount: number, _temperature: number = 0): string[] {
     // Extract key points from the text
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
     
@@ -106,7 +106,7 @@ export class MockModelClient implements ModelClient {
       if (sentence.length > 0) {
         // Clean up the sentence and make it bullet-friendly
         let bullet = sentence
-          .replace(/^[•\-\*]\s*/, '') // Remove existing bullet markers
+          .replace(/^[•*\-]\s*/, '') // Remove existing bullet markers
           .replace(/^\d+\.\s*/, '') // Remove numbered lists
           .trim();
         

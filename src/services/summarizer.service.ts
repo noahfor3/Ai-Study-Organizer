@@ -3,7 +3,7 @@
  */
 
 import { ModelClient } from '../integrations/modelClient';
-import { wordCount, normalize, extractSentences, truncateToWordCount, containsNumbers, extractNumbers } from '../utils/text';
+import { wordCount, normalize, extractSentences, extractNumbers } from '../utils/text';
 import { redactPII } from '../utils/redact';
 
 export interface SummarizeRequest {
@@ -30,7 +30,7 @@ export interface SummarizeError extends Error {
  * Validation error for input validation failures
  */
 export class ValidationError extends Error implements SummarizeError {
-  code: 'VALIDATION_ERROR' = 'VALIDATION_ERROR';
+  code = 'VALIDATION_ERROR' as const;
   
   constructor(message: string) {
     super(message);
@@ -42,7 +42,7 @@ export class ValidationError extends Error implements SummarizeError {
  * Processing error for summarization failures
  */
 export class ProcessingError extends Error implements SummarizeError {
-  code: 'PROCESSING_ERROR' = 'PROCESSING_ERROR';
+  code = 'PROCESSING_ERROR' as const;
   
   constructor(message: string) {
     super(message);
@@ -54,7 +54,7 @@ export class ProcessingError extends Error implements SummarizeError {
  * Hallucination error for when AI introduces facts not in source
  */
 export class HallucinationError extends Error implements SummarizeError {
-  code: 'HALLUCINATION_ERROR' = 'HALLUCINATION_ERROR';
+  code = 'HALLUCINATION_ERROR' as const;
   
   constructor(message: string) {
     super(message);

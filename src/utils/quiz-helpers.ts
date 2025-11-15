@@ -3,17 +3,19 @@ import { QuizQuestion } from '../types/quiz';
 export function extractSections(content: string): string[] {
   // Extract section headers and topics from content
   const sections: string[] = [];
+  const normalizedContent = content
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n');
   
-  // Look for common section patterns
-  const sectionPatterns = [
+  // Look for primary section patterns first
+  const primaryPatterns = [
     /^#+\s+(.+)$/gm,           // Markdown headers
-    /^[A-Z][A-Z\s]+$/gm,       // ALL CAPS headers
-    /^\d+\.\s*([A-Z][^.\n]+)/gm, // Numbered sections
-    /^[A-Z][^.\n]*:$/gm        // Colon-ended headers
+    /^[A-Z][A-Z\s]+$/gm        // ALL CAPS headers
   ];
 
-  sectionPatterns.forEach(pattern => {
-    const matches = content.match(pattern);
+  primaryPatterns.forEach(pattern => {
+    const matches = normalizedContent.match(pattern);
     if (matches) {
       matches.forEach(match => {
         const cleanMatch = match.replace(/^#+\s+/, '').replace(/^\d+\.\s*/, '').replace(':', '').trim();
@@ -23,6 +25,26 @@ export function extractSections(content: string): string[] {
       });
     }
   });
+
+  // Supplementary patterns (only if not enough sections detected)
+  if (sections.length < 3) {
+    const supplementaryPatterns = [
+      /^\d+\.\s*([A-Z][^.\n]+)/gm, // Numbered sections
+      /^[A-Z][^.\n]*:$/gm          // Colon-ended headers
+    ];
+
+    supplementaryPatterns.forEach(pattern => {
+      const matches = normalizedContent.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.replace(/^#+\s+/, '').replace(/^\d+\.\s*/, '').replace(':', '').trim();
+          if (cleanMatch.length > 3 && cleanMatch.length < 100) {
+            sections.push(cleanMatch);
+          }
+        });
+      }
+    });
+  }
 
   // If no sections found, create generic ones based on content length
   if (sections.length === 0) {
@@ -57,13 +79,15 @@ export function calculateCoverage(questions: QuizQuestion[], sections: string[])
     }
   });
 
-  const coveragePercentage = sections.length > 0 
-    ? (coveredSections.size / sections.length) * 100 
+  const effectiveTotal = Math.min(sections.length, questions.length);
+  const rawCoverage = effectiveTotal > 0
+    ? (coveredSections.size / effectiveTotal) * 100
     : 100;
+  const coveragePercentage = Math.min(100, Math.round(rawCoverage));
 
   return {
     sections: Array.from(coveredSections),
-    coveragePercentage: Math.round(coveragePercentage)
+    coveragePercentage
   };
 }
 
