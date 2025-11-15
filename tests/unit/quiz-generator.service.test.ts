@@ -2,6 +2,12 @@ import { QuizGeneratorService } from '../../src/services/quiz-generator.service'
 import { MockModelClient } from '../../src/integrations/modelClient';
 import { QuizRequest } from '../../src/types/quiz';
 
+const createMetadata = () => ({
+  tokensUsed: 50,
+  generatedAt: new Date('2024-01-01T00:00:00.000Z').toISOString(),
+  sourceLength: 100,
+});
+
 describe('QuizGeneratorService', () => {
   let service: QuizGeneratorService;
   let mockClient: MockModelClient;
@@ -204,7 +210,8 @@ describe('QuizGeneratorService', () => {
         stem: 'What is machine learning?',
         options: ['Option A', 'Option B', 'Option C', 'Option D'],
         correctAnswer: 0,
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -217,7 +224,8 @@ describe('QuizGeneratorService', () => {
         type: 'true_false',
         stem: 'Machine learning is a subset of AI.',
         correctAnswer: true,
-        difficulty: 'easy'
+        difficulty: 'easy',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -230,7 +238,8 @@ describe('QuizGeneratorService', () => {
         type: 'short_answer',
         stem: 'What are the three types of machine learning?',
         correctAnswer: 'Supervised, unsupervised, reinforcement',
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -244,7 +253,8 @@ describe('QuizGeneratorService', () => {
         stem: 'What is machine learning?',
         options: ['Option A', 'Option B'],
         correctAnswer: 0,
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -258,7 +268,8 @@ describe('QuizGeneratorService', () => {
         stem: 'What is machine learning?',
         options: ['Option A', 'Option B', 'Option C', 'Option D'],
         correctAnswer: 5,
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -271,7 +282,8 @@ describe('QuizGeneratorService', () => {
         type: 'true_false',
         stem: 'Machine learning is a subset of AI.',
         correctAnswer: 'true',
-        difficulty: 'easy'
+        difficulty: 'easy',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -284,7 +296,8 @@ describe('QuizGeneratorService', () => {
         type: 'short_answer',
         stem: 'What are the three types of machine learning?',
         correctAnswer: '',
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -298,7 +311,8 @@ describe('QuizGeneratorService', () => {
         stem: 'Which of the following is correct? All of the above.',
         options: ['Option A', 'Option B', 'Option C', 'All of the above'],
         correctAnswer: 3,
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
@@ -312,7 +326,8 @@ describe('QuizGeneratorService', () => {
         stem: 'What?',
         options: ['Option A', 'Option B', 'Option C', 'Option D'],
         correctAnswer: 0,
-        difficulty: 'medium'
+        difficulty: 'medium',
+        metadata: createMetadata(),
       };
 
       const errors = service.validateQuestion(question);
