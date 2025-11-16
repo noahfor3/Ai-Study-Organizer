@@ -163,12 +163,19 @@ export class MockModelClient implements ModelClient {
     const stem = sentences[0]?.trim() || 'What is the main topic discussed?';
     const correctAnswer = sentences[1]?.trim() || 'The main concept';
     
+    // Ensure we always have exactly 4 options
     const options = [
       correctAnswer,
-      sentences[2]?.trim() || 'Alternative concept A',
-      sentences[3]?.trim() || 'Alternative concept B', 
-      sentences[4]?.trim() || 'Alternative concept C'
-    ].slice(0, 4);
+      sentences[2]?.trim() || 'First alternative option',
+      sentences[3]?.trim() || 'Second alternative option', 
+      sentences[4]?.trim() || 'Third alternative option'
+    ];
+    
+    // Guarantee exactly 4 unique options
+    while (options.length < 4) {
+      options.push(`Alternative ${options.length}`);
+    }
+    options.splice(4); // Ensure no more than 4
 
     return {
       stem: `Which of the following best describes: ${stem}?`,

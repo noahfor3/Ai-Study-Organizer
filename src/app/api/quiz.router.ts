@@ -10,7 +10,7 @@ const router = Router();
 const modelClient = createModelClient({
   apiKey: process.env.MODEL_API_KEY,
   temperature: parseFloat(process.env.MODEL_TEMPERATURE || '0'),
-}, true); // Use real AI model
+}, process.env.NODE_ENV !== 'test'); // Use real AI model only when not in test
 
 const quizGeneratorService = new QuizGeneratorService(modelClient);
 
