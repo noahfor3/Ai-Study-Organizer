@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, within, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from '../../src/app/(app)/dashboard/page';
 
 // Mock Supabase

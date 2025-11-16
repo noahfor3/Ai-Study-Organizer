@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { ThemeToggleButton } from '../../src/components/theme-toggle-button';
 
 // Mock next-themes
@@ -32,7 +31,7 @@ jest.mock('@/components/ui/button', () => ({
 
 jest.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => <div data-testid="dropdown-menu">{children}</div>,
-  DropdownMenuTrigger: ({ children, asChild }: any) => (
+  DropdownMenuTrigger: ({ children }: any) => (
     <div data-testid="dropdown-trigger">{children}</div>
   ),
   DropdownMenuContent: ({ children, align }: any) => (

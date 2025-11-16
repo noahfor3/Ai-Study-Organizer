@@ -54,22 +54,3 @@ test.describe('Dashboard Flow', () => {
     await expect(focusedElement).toBeVisible();
   });
 });
-
-// Example of how you might test authenticated flows in the future
-test.describe('Dashboard - Authenticated User', () => {
-  test.skip('should display dashboard after login', async ({ page }) => {
-    // This test is skipped because it requires authentication setup
-    // In the future, you could use Playwright's auth setup to:
-    // 1. Create a test user
-    // 2. Login programmatically
-    // 3. Test authenticated features
-    
-    // await page.goto('/');
-    // await page.getByPlaceholder(/email/i).fill('test@example.com');
-    // await page.getByPlaceholder(/password/i).fill('testpassword');
-    // await page.getByRole('button', { name: /sign in/i }).click();
-    // 
-    // await expect(page).toHaveURL(/.*dashboard.*/);
-    // await expect(page.getByText(/welcome/i)).toBeVisible();
-  });
-});
