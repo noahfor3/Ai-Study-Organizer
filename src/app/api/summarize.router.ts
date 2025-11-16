@@ -13,7 +13,7 @@ const router = Router();
 const modelClient = createModelClient({
   apiKey: process.env.MODEL_API_KEY,
   temperature: parseFloat(process.env.MODEL_TEMPERATURE || '0'),
-}, false); // Use mock client for now
+}, true); // Use real AI model
 
 const summarizerService = new SummarizerService(modelClient);
 

@@ -3,11 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-// Create both clients; prefer the service-role client for privileged reads.
+// Create anon client for standard sign-ins.
 const supabaseAnon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-const supabase = SERVICE_ROLE_KEY ? createClient(SUPABASE_URL, SERVICE_ROLE_KEY) : supabaseAnon
 
 type ReqBody = {
   identifier?: string
@@ -44,7 +42,10 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ user: data.user ?? null, session: data.session ?? null })
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Unexpected server error' }, { status: 500 })
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message || 'Unexpected server error' }, { status: 500 })
+    }
+    return NextResponse.json({ error: 'Unexpected server error' }, { status: 500 })
   }
 }

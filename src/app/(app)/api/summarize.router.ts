@@ -33,8 +33,7 @@ ${body.classes
       prompt,
     });
 
-    const text = response.text || "No schedule could be generated.";
-
+    const text = response.text ?? "No schedule could be generated.";
     return NextResponse.json({ schedule: text });
   } catch (error: any) {
     console.error("Gemini error:", error);
