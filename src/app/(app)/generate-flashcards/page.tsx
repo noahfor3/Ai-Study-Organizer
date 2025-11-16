@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Layers, Loader2, AlertTriangle } from 'lucide-react';
@@ -42,9 +42,14 @@ export default function GenerateFlashcardsPage() {
       } else {
         setError("No flashcards were generated. Try adjusting your input text or try again.");
       }
-    } catch (e: any) {
-      setError(e.message || 'An unexpected error occurred while generating flashcards.');
-      console.error(e);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || 'An unexpected error occurred while generating flashcards.');
+        console.error(error);
+      } else {
+        setError('An unexpected error occurred while generating flashcards.');
+        console.error(error);
+      }
     } finally {
       setIsLoading(false);
     }

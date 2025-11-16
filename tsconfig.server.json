@@ -30,6 +30,7 @@
     "tests",
     "src/app",
     "src/components",
-    "src/hooks"
+    "src/hooks",
+    "src/lib/supabaseBrowser.ts"
   ]
 }
