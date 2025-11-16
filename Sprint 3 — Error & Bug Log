@@ -1,0 +1,189 @@
+🐞 Sprint 3 — Error & Bug Log
+
+This sprint involved several critical debugging sessions related to Git conflicts, TypeScript errors, API integration issues, and Express routing. The following log documents each major issue, its cause, the steps to reproduce it, and how it was fixed.
+
+🔹 Bug 1 — Git Merge Conflict in src/app.ts
+Status: Resolved
+Severity: High
+Category: Git / Merge Conflict / Build Breaker
+Description
+
+During a rebase of feature/generate-notes onto the latest remote branch, src/app.ts failed to merge due to conflicting logic originating from two different feature branches:
+
+One version included logger and updated Express structure
+
+Another version included outdated import paths (e.g., ./app/(app)/api/summarize.router)
+
+Reproduction Steps
+
+Checkout feature/generate-notes
+
+Run:
+
+git pull --rebase origin feature/generate-notes
+
+
+Observe conflict in src/app.ts
+
+Root Cause
+
+Multiple branches edited the same file section (imports + router mounting) without synchronized updates. When rebasing, Git attempted to apply both histories, which generated invalid syntax, unclosed comment blocks, and duplicated imports.
+
+Fix Applied
+
+Conflict markers (<<<<<<<, =======, >>>>>>>) were manually removed.
+
+All imports were corrected to use the actual project structure:
+
+import summarizeRouter from './app/api/summarize.router';
+import logger from './lib/logger';
+
+
+Ensured all comment blocks were terminated properly.
+
+Rebuilt the application locally to confirm no syntax errors remained.
+
+Rebasing continued and branch force-pushed:
+
+git add src/app.ts
+git rebase --continue
+git push origin feature/generate-notes --force
+
+Verification
+
+App compiled without TypeScript errors
+
+Express server booted correctly
+
+Request logging worked
+
+All integration tests passed
+
+🔹 Bug 2 — TypeScript Error: “Invalid character” & Missing Property
+Status: Resolved
+Severity: Medium
+Category: TypeScript / AI API Integration
+Description
+
+Inside summarize.router.ts, TypeScript threw:
+
+TS1127: Invalid character.
+TS2339: Property 'outputText' does not exist on type GenerateResponse.
+
+Reproduction Steps
+
+Open the file
+
+Attempt to build or simply let VSCode's TypeScript server analyze it
+
+The invalid character appears because of a stray closing comment followed by code:
+
+*/
+import summarizeRouter ...
+
+Root Cause
+
+A comment block was closed incorrectly, causing TS to treat the next line as invalid.
+
+The correct property from Genkit’s response object is outputText, but earlier code incorrectly used output_text() as a function.
+
+Fix Applied
+
+Removed stray comment block characters.
+
+Corrected the AI output extraction:
+
+const text = response.outputText ?? "No schedule could be generated.";
+
+Verification
+
+TypeScript error list is empty
+
+Feature runs correctly
+
+Generated schedules appear normally in frontend
+
+Integration tests referencing schedule endpoint pass
+
+🔹 Bug 3 — CI Failure: Missing Bracket in app.ts
+Status: Resolved
+Severity: High
+Category: Syntax / Build Breaker / CI Test Failure
+Description
+
+CI pipeline reported:
+
+TS1005: '}' expected.
+
+Root Cause
+
+A merge left an unbalanced set of brackets inside the createApp() function. Local builds didn’t show it until Jest integration tests executed in CI.
+
+Fix Applied
+
+Reconstructed the closing brackets for:
+
+Express error handler
+
+createApp() function
+
+Re-indented code to visually confirm matching braces.
+
+Verification
+
+CI passed all tests
+
+Local build succeeded
+
+App boots normally
+
+🔹 Bug 4 — Non-Fast-Forward Push Rejections
+Status: Resolved
+Severity: Medium
+Category: Git Workflow
+Description
+
+git push rejected:
+
+! [rejected] non-fast-forward
+
+Root Cause
+
+Local branch was behind remote history after teammates’ commits.
+
+Fix Applied
+
+Rebased properly with conflict resolution:
+
+git pull --rebase origin feature/generate-notes
+git push origin feature/generate-notes --force
+
+Verification
+
+Branch now matches remote exactly
+
+PR shows correct updated commit history
+
+🔹 Bug 5 — Incorrect Import Path in Older Branch
+Status: Resolved
+Severity: Low
+Category: Project Structure / API Routing
+Description
+
+Old code referenced:
+
+import summarizeRouter from './app/(app)/api/summarize.router';
+
+Root Cause
+
+Project structure was refactored to:
+
+src/app/api/
+
+Fix Applied
+
+Updated import in all files to the correct path.
+
+Verification
+
+No module resolution errors remained.
