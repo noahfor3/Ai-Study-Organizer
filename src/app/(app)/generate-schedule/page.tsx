@@ -450,6 +450,40 @@ export default function GenerateSchedulePage() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 "use client";
 
 import React, { useState } from "react";
@@ -498,6 +532,204 @@ export default function GenerateSchedulePage() {
       setSchedule(data.schedule);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto p-8">
+      <Card className="shadow-2xl border border-gray-200 rounded-2xl bg-white">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-center text-blue-700">
+            🧠 AI Study Schedule Generator
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <p className="text-gray-600 text-center">
+            Enter your class schedule, and AI will generate a personalized,
+            hour-by-hour study plan tailored to your actual courses.
+          </p>
+
+          <div className="space-y-4">
+            {classes.map((cls, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-1 sm:grid-cols-5 gap-3 border p-4 rounded-lg bg-gray-50 shadow-sm"
+              >
+                <Input
+                  placeholder="Class Name (e.g., CPSC 351)"
+                  value={cls.name}
+                  onChange={(e) => handleChange(index, "name", e.target.value)}
+                />
+                <Input
+                  placeholder="Days (e.g., Mon/Wed)"
+                  value={cls.days}
+                  onChange={(e) => handleChange(index, "days", e.target.value)}
+                />
+                <Input
+                  placeholder="Start Time (e.g., 10:00 AM)"
+                  value={cls.startTime}
+                  onChange={(e) => handleChange(index, "startTime", e.target.value)}
+                />
+                <Input
+                  placeholder="End Time (e.g., 11:15 AM)"
+                  value={cls.endTime}
+                  onChange={(e) => handleChange(index, "endTime", e.target.value)}
+                />
+                {classes.length > 1 && (
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleRemoveClass(index)}
+                    className="mx-auto"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                onClick={handleAddClass}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" /> Add Class
+              </Button>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Button
+              onClick={handleGenerate}
+              disabled={loading || classes.some((cls) => !cls.name)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-xl shadow-md transition"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Schedule...
+                </>
+              ) : (
+                "Generate My Study Plan"
+              )}
+            </Button>
+          </div>
+
+          {error && (
+            <p className="text-center text-red-500 font-semibold">{error}</p>
+          )}
+
+          {schedule && (
+            <Card className="mt-8 bg-gray-50 shadow-inner border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-blue-700">
+                  📅 Your Personalized Study Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  readOnly
+                  value={schedule}
+                  className="w-full min-h-[400px] text-gray-800 font-medium bg-white p-4 rounded-xl border"
+                />
+              </CardContent>
+            </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+*/
+
+
+"use client";
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Plus, Trash2 } from "lucide-react";
+
+/**
+ * Local storage keys used by the app
+ */
+const GENERATED_EVENTS_KEY = "ai-study-organizer:generated-schedule-events-v1";
+const GENERATED_RAW_KEY = "ai-study-organizer:generated-schedule-raw-v1";
+
+export default function GenerateSchedulePage() {
+  const [classes, setClasses] = useState([
+    { name: "", days: "", startTime: "", endTime: "" },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const [schedule, setSchedule] = useState("");
+  const [error, setError] = useState("");
+
+  const handleAddClass = () => {
+    setClasses([...classes, { name: "", days: "", startTime: "", endTime: "" }]);
+  };
+
+  const handleRemoveClass = (index: number) => {
+    setClasses(classes.filter((_, i) => i !== index));
+  };
+
+  const handleChange = (index: number, field: string, value: string) => {
+    const updated = [...classes];
+    // @ts-ignore index typing
+    updated[index][field] = value;
+    setClasses(updated);
+  };
+
+  const handleGenerate = async () => {
+    setError("");
+    setSchedule("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/generate-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ classes }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to generate schedule");
+
+      // Primary UI behavior: show schedule text as before
+      setSchedule(data.schedule || "");
+
+      // Save returned structured events (if backend provides them)
+      if (typeof window !== "undefined") {
+        try {
+          if (data.events && Array.isArray(data.events)) {
+            // Save structured events for schedule-view to read later
+            localStorage.setItem(GENERATED_EVENTS_KEY, JSON.stringify(data.events));
+            // remove raw if exists
+            localStorage.removeItem(GENERATED_RAW_KEY);
+          } else {
+            // Save raw schedule text so schedule-view can pick it up
+            const raw = {
+              text: data.schedule || "",
+              savedAt: Date.now(),
+            };
+            localStorage.setItem(GENERATED_RAW_KEY, JSON.stringify(raw));
+            // remove structured if exists
+            localStorage.removeItem(GENERATED_EVENTS_KEY);
+          }
+        } catch (err) {
+          // ignore localStorage errors, but keep main UI working
+          console.warn("Could not persist generated schedule to localStorage", err);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred while generating schedule.");
     } finally {
       setLoading(false);
     }
