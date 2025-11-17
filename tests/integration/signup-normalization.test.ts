@@ -21,7 +21,7 @@ describe('signup normalization integration', () => {
     mockSignupClient = {
       from: (_table: string) => ({
         select: (_sel: string) => ({
-          ilike: (_col: string, val: string) => ({
+          ilike: (_col: string, _val: string) => ({
             limit: (_n: number) => Promise.resolve({ data: [], error: null })
           })
         }),

@@ -17,29 +17,28 @@ Generate a practical, hour-by-hour weekly study schedule for the student based o
 
 Each study session should:
 - Include realistic times (morning, afternoon, evening)
-- Be specific to each subject (e.g., "Review algorithms for CPSC 335" or "Summarize lecture notes for MATH 338")
-- Include breaks and variety (short reviews, problem-solving, reading, rest)
+- Be specific to each subject (example: "Review algorithms for CPSC 335")
+- Include breaks and variety (short reviews, problem-solving, reading)
 - Avoid overlapping with the student's actual class times
 
 Classes:
 ${body.classes
   .map(
     (c: any) =>
-      `📘 ${c.name} — ${c.days} (${c.startTime} to ${c.endTime})`
+      `${c.name} — ${c.days} (${c.startTime} to ${c.endTime})`
   )
   .join("\n")}
 `;
 
-    // ✅ Call Gemini correctly
     const response = await ai.generate({
-      model: "gemini-1.5-flash", // ✅ Correct model name
+      model: "gemini-1.5-flash",
       prompt,
     });
 
-    const text = response.output_text || "No schedule could be generated.";
+    const text = response.text ?? "No schedule could be generated.";
     return NextResponse.json({ schedule: text });
   } catch (error: any) {
-    console.error("❌ Gemini generation error:", error);
+    console.error("Gemini error:", error);
     return NextResponse.json(
       { error: error.message || "An error occurred while generating the schedule." },
       { status: 500 }
