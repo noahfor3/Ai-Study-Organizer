@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { ai } from "@/ai/genkit";
+//import { ai } from "@/ai/genkit"; 
+//this import line is what is causing the error, it can't import what does not exist
+
 
 export async function POST(req: Request) {
   try {
