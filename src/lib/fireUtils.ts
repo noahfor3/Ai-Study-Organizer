@@ -34,7 +34,7 @@ export function asConfidencePct(conf: string | number | undefined): number {
 
   const n = Number(s);
   if (!Number.isNaN(n)) {
-    if (n <= 1) return Math.round(n * 100); // 0..1 → 0..100
+    if (n >= 0 && n <= 1) return Math.round(n * 100);
     return Math.max(0, Math.min(100, Math.round(n)));
   }
 
