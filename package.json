@@ -65,11 +65,13 @@
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
+    "react-globe.gl": "^2.37.0",
     "react-hook-form": "^7.54.2",
     "react-leaflet": "^4.2.1",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.182.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

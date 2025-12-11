@@ -4,20 +4,23 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
+import type { FirePoint } from "@/types/maps";
+
 const WildfireMap = dynamic(
   () => import("@/components/wildfire-map").then((m) => m.WildfireMap),
   { ssr: false }
 );
-
-type FirePoint = {
-  latitude: number;
-  longitude: number;
-  brightness?: number;
-  frp?: number;
-  confidence?: number | string;
-  timestamp?: string | Date;
-  brightnessCat?: string;
-};
+const WildfireGlobe = dynamic(
+  () => import("@/components/wildfire-globe").then((m) => m.WildfireGlobe),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[420px] items-center justify-center rounded-lg border border-white/5 text-sm opacity-70">
+        Loading 3D globe…
+      </div>
+    ),
+  }
+);
 
 type USFiresResponse = {
   mode: "us";
@@ -37,6 +40,7 @@ export default function WildfiresUSPage() {
   const [predictableOnly, setPredictableOnly] = useState(false);
   const [days, setDays] = useState(1);
   const [dataset, setDataset] = useState<"VIIRS_SNPP_NRT" | "VIIRS_NOAA21_NRT">("VIIRS_SNPP_NRT");
+  const [viewMode, setViewMode] = useState<"map" | "globe">("map");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -140,13 +144,39 @@ export default function WildfiresUSPage() {
             </span>
           </div>
 
-          <WildfireMap
-            center={data.center}
-            radiusMiles={0}
-            fires={data.fires}
-            showRadius={false}
-            zoom={data.zoom}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-medium">Map View</div>
+            <div className="flex gap-2 rounded-full border border-white/10 p-1 text-sm">
+              <button
+                className={`rounded-full px-4 py-1 transition ${
+                  viewMode === "map" ? "bg-white/90 text-black" : "opacity-70 hover:opacity-100"
+                }`}
+                onClick={() => setViewMode("map")}
+              >
+                2D Map
+              </button>
+              <button
+                className={`rounded-full px-4 py-1 transition ${
+                  viewMode === "globe" ? "bg-white/90 text-black" : "opacity-70 hover:opacity-100"
+                }`}
+                onClick={() => setViewMode("globe")}
+              >
+                3D Globe
+              </button>
+            </div>
+          </div>
+
+          {viewMode === "map" ? (
+            <WildfireMap
+              center={data.center}
+              radiusMiles={0}
+              fires={data.fires}
+              showRadiusCircle={false}
+              zoom={data.zoom}
+            />
+          ) : (
+            <WildfireGlobe center={data.center} fires={data.fires} />
+          )}
         </div>
       )}
     </div>
