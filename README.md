@@ -1,9 +1,9 @@
-# AI Study Organizer - CPSC 491 Capstone Project
+# Study Safe - Wildfire Education Platform
 
 [![CI](https://github.com/noahfor3/Ai-Study-Organizer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/noahfor3/Ai-Study-Organizer/actions/workflows/ci.yml)
 **Ryan Takata | Noah Yarbrough | Thien La | Amr Mahmoud**  
 
-This project is an AI powered study organizer that assists students with daily needs throughout their time in schooling. It uses Next.js, TypeScript, and Tailwind CSS to deliver a powerful companion to assist with time and study management.
+Study Safe is a wildfire education and safety platform designed to help people learn about wildfire prevention, safety protocols, and risk assessment. Built with Next.js, TypeScript, and Tailwind CSS, it provides interactive tools and resources for wildfire education.
 
 ## How to Setup in a New Environment
 1. Make sure Node.js is installed.
