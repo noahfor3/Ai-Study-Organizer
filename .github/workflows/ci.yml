@@ -41,6 +41,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          FIRE_CACHE_TTL: 3600
         run: npm run build
 
       - name: Build API
@@ -71,6 +72,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          FIRE_CACHE_TTL: 3600
         run: npm run test:unit
 
   integration:
@@ -107,6 +109,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          FIRE_CACHE_TTL: 3600
         run: npm run test:integration
 
   coverage:
