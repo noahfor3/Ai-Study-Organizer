@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Brain } from 'lucide-react'
+import { Shield } from 'lucide-react'
 // The client now posts credentials to a secure server endpoint which
 // resolves username -> email and performs sign-in server-side.
 
@@ -71,13 +71,13 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-8 left-8 flex items-center gap-2 text-foreground">
-        <Brain className="h-8 w-8 text-primary" />
-        <span className="text-2xl font-bold">SmartPath</span>
+        <Shield className="h-8 w-8 text-primary" />
+        <span className="text-2xl font-bold">Study Safe</span>
       </div>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your study dashboard.</CardDescription>
+          <CardDescription>Enter your credentials to access your wildfire education platform.</CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-6">
