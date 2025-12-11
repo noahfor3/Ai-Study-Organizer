@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Globe, { type GlobeMethods } from "react-globe.gl";
+import type { GlobeMethods } from "react-globe.gl";
+
+type ReactGlobe = typeof import("react-globe.gl") extends { default: infer T } ? T : never;
 
 import type { FirePoint } from "@/types/maps";
 
@@ -46,6 +48,7 @@ function formatTime(ts: FirePoint["timestamp"]) {
 }
 
 export function WildfireGlobe({ fires, center, heightPx = 420, autoRotate = true }: Props) {
+  const [GlobeComponent, setGlobeComponent] = useState<ReactGlobe | null>(null);
   const globeRef = useRef<GlobeMethods | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -111,40 +114,57 @@ export function WildfireGlobe({ fires, center, heightPx = 420, autoRotate = true
     return () => window.removeEventListener("resize", resize);
   }, [heightPx]);
 
+  useEffect(() => {
+    let mounted = true;
+    void import("react-globe.gl").then((mod) => {
+      if (!mounted) return;
+      setGlobeComponent(() => mod.default);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
       className="relative rounded-lg border border-white/5 bg-black/10"
       style={{ height: heightPx }}
     >
-      <Globe
-        ref={globeRef}
-        globeImageUrl={EARTH_TEXTURE}
-        bumpImageUrl={EARTH_BUMP}
-        backgroundColor="rgba(0,0,0,0)"
-        width={dimensions.width || undefined}
-        height={dimensions.height || undefined}
-        pointAltitude={(d: GlobePoint) => d.altitude}
-        pointRadius={(d: GlobePoint) => d.radius}
-        pointColor={(d: GlobePoint) => d.color}
-        pointLabel={(d: GlobePoint) => `
-          <div style="font-size:12px;line-height:1.4">
-            <div><strong>Brightness:</strong> ${d.fire.brightness ?? "—"} (${d.fire.brightnessCat ?? "—"})</div>
-            <div><strong>FRP:</strong> ${d.fire.frp ?? "—"}</div>
-            <div><strong>Confidence:</strong> ${d.fire.confidence ?? "—"}</div>
-            ${
-              typeof d.fire.distanceFromCenter === "number"
-                ? `<div><strong>Distance:</strong> ${d.fire.distanceFromCenter.toFixed(2)} mi</div>`
-                : ""
-            }
-            <div><strong>Time:</strong> ${formatTime(d.fire.timestamp)}</div>
-          </div>
-        `}
-        pointsData={pointsData}
-        atmosphereColor="rgba(255,140,0,0.35)"
-        atmosphereAltitude={0.25}
-        pointsTransitionDuration={400}
-      />
+      {GlobeComponent ? (
+        <GlobeComponent
+          ref={globeRef}
+          globeImageUrl={EARTH_TEXTURE}
+          bumpImageUrl={EARTH_BUMP}
+          backgroundColor="rgba(0,0,0,0)"
+          width={dimensions.width || undefined}
+          height={dimensions.height || undefined}
+          pointAltitude={(d: GlobePoint) => d.altitude}
+          pointRadius={(d: GlobePoint) => d.radius}
+          pointColor={(d: GlobePoint) => d.color}
+          pointLabel={(d: GlobePoint) => `
+            <div style="font-size:12px;line-height:1.4">
+              <div><strong>Brightness:</strong> ${d.fire.brightness ?? "—"} (${d.fire.brightnessCat ?? "—"})</div>
+              <div><strong>FRP:</strong> ${d.fire.frp ?? "—"}</div>
+              <div><strong>Confidence:</strong> ${d.fire.confidence ?? "—"}</div>
+              ${
+                typeof d.fire.distanceFromCenter === "number"
+                  ? `<div><strong>Distance:</strong> ${d.fire.distanceFromCenter.toFixed(2)} mi</div>`
+                  : ""
+              }
+              <div><strong>Time:</strong> ${formatTime(d.fire.timestamp)}</div>
+            </div>
+          `}
+          pointsData={pointsData}
+          atmosphereColor="rgba(255,140,0,0.35)"
+          atmosphereAltitude={0.25}
+          pointsTransitionDuration={400}
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-sm opacity-70">
+          Loading globe…
+        </div>
+      )}
 
       {fires.length === 0 && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm opacity-70">
