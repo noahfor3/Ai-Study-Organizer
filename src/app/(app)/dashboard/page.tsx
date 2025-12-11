@@ -5,7 +5,21 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ListChecks, BookOpen, PlusCircle, CalendarDays, Wand2, Calendar as CalendarIcon, UploadCloud, FileQuestion, ArrowRight, Layers, NotebookPen } from 'lucide-react'
+import {
+  ListChecks,
+  BookOpen,
+  PlusCircle,
+  CalendarDays,
+  Wand2,
+  Calendar as CalendarIcon,
+  UploadCloud,
+  FileQuestion,
+  ArrowRight,
+  Layers,
+  NotebookPen,
+  Flame, //  add
+  Map,   //  add
+} from "lucide-react";
 import supabase from '@/lib/supabaseBrowser'
 
 const featureTiles = [
@@ -17,6 +31,20 @@ const featureTiles = [
   { title: "Generate Flashcards", description: "Create flashcards from your study materials.", href: "/generate-flashcards", icon: Layers, cta: "Create Flashcards" },
   { title: "Generate Notes", description: "Summarize documents into study notes.", href: "/generate-notes", icon: NotebookPen, cta: "Create Notes" },
   { title: "Take a Quiz", description: "Test your knowledge with interactive quizzes.", href: "/quiz", icon: FileQuestion, cta: "Start Quiz" },
+  {
+    title: "Wildfires Near You",
+    description: "Enter a ZIP code to view nearby NASA FIRMS detections on a map.",
+    href: "/wildfires",
+    icon: Flame,
+    cta: "Open Map",
+  },
+  {
+    title: "US-Wide Wildfires",
+    description: "Explore recent detections across the U.S. and click markers for details.",
+    href: "/wildfires-us",
+    icon: Map,
+    cta: "Explore US",
+  },
 ];
 
 const upcomingTasks = [
