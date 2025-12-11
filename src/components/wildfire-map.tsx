@@ -4,16 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-type FirePoint = {
-  latitude: number;
-  longitude: number;
-  brightness?: number;
-  frp?: number;
-  confidence?: number | string;
-  distanceFromCenter?: number;
-  timestamp?: string | Date;
-  brightnessCat?: string;
-};
+import type { FirePoint } from "@/types/maps";
 
 type Props = {
   center: { latitude: number; longitude: number };
@@ -123,7 +114,7 @@ export function WildfireMap({
       }
     };
     // IMPORTANT: create map only once per mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, []);
 
   // Update view when center/zoom changes
