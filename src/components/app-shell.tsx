@@ -22,7 +22,7 @@ const navItems = [
   { href: "/generate-schedule", label: "Generate Schedule", icon: Wand2 },
   { href: "/schedule-view", label: "View Schedule", icon: CalendarIcon },
   { href: "/upload-document", label: "Upload & Quiz", icon: UploadCloud },
-  { href: "/generate-flashcards", label: "Flashcards", icon: Layers },
+  { href: "/generate-flashcards", label: "Fire Safety Flashcards", icon: Layers },
   { href: "/generate-notes", label: "Generate Notes", icon: NotebookPen },
   { href: "/quiz", label: "Take Quiz", icon: FileQuestion },
 ];
