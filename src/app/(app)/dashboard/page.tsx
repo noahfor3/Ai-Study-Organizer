@@ -25,11 +25,11 @@ import {
 import supabase from '@/lib/supabaseBrowser'
 
 const featureTiles = [
-  { title: "Add New Course", description: "Input details for your courses and deadlines.", href: "/add-course", icon: PlusCircle, cta: "Add Course" },
-  { title: "Set Availability", description: "Mark your free time for focused study sessions.", href: "/set-availability", icon: CalendarDays, cta: "Set Times" },
+  // { title: "Add New Course", description: "Input details for your courses and deadlines.", href: "/add-course", icon: PlusCircle, cta: "Add Course" },
+  // { title: "Set Availability", description: "Mark your free time for focused study sessions.", href: "/set-availability", icon: CalendarDays, cta: "Set Times" },
   { title: "Generate Schedule", description: "Let AI create an optimized study plan for you.", href: "/generate-schedule", icon: Wand2, cta: "Generate" },
   { title: "View Schedule", description: "See your upcoming study sessions and tasks.", href: "/schedule-view", icon: CalendarIcon, cta: "View Calendar" },
-  { title: "Upload & Quiz", description: "Upload documents and generate quizzes.", href: "/upload-document", icon: UploadCloud, cta: "Upload Files" },
+  // { title: "Upload & Quiz", description: "Upload documents and generate quizzes.", href: "/upload-document", icon: UploadCloud, cta: "Upload Files" },
   { title: "Fire Safety Flashcards", description: "Test your knowledge of fire safety and wildfire prevention.", href: "/generate-flashcards", icon: Layers, cta: "Study Flashcards" },
   { title: "Generate Notes", description: "Summarize documents into study notes.", href: "/generate-notes", icon: NotebookPen, cta: "Create Notes" },
   { title: "Wildfire Risk Assessment", description: "Test your wildfire safety knowledge and get personalized recommendations.", href: "/quiz", icon: FileQuestion, cta: "Take Assessment" },
