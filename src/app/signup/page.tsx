@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Brain } from 'lucide-react'
+import { Shield } from 'lucide-react'
 import supabase from '@/lib/supabaseBrowser'
 
 export default function SignupPage() {
@@ -146,14 +146,14 @@ export default function SignupPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="absolute top-8 left-8 flex items-center gap-2 text-foreground">
-        <Brain className="h-8 w-8 text-primary" />
-        <span className="text-2xl font-bold">SmartPath</span>
+        <Shield className="h-8 w-8 text-primary" />
+        <span className="text-2xl font-bold">Study Safe</span>
       </div>
       <form onSubmit={handleSubmit} className="w-full max-w-md">
         <Card className="w-full shadow-xl">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-3xl font-bold">Create Account</CardTitle>
-            <CardDescription>Join SmartPath to optimize your learning journey.</CardDescription>
+            <CardDescription>Join Study Safe to learn about wildfire safety and prevention.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">

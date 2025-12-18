@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const geistSans = GeistSans;
 
 export const metadata: Metadata = {
-  title: 'SmartPath',
-  description: 'AI-Powered Study Planner',
+  title: 'Study Safe',
+  description: 'Wildfire Education & Safety Platform',
 };
 
 export default function RootLayout({
