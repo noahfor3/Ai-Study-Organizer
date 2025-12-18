@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateNotesFlow } from "@/ai/flows/generate-notes-flow"; // Adjust path
+import { generateNotes } from "@/ai/flows/generate-notes-flow";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
     // Validate input
-    if (!body.classes || !Array.isArray(body.classes)) {
+    if (!body.documentContent || !body.noteStyle) {
       return NextResponse.json(
-        { error: "Invalid request: 'classes' array is required" },
+        { error: "Invalid request: 'documentContent' and 'noteStyle' are required" },
         { status: 400 }
       );
     }
 
     // Call AI flow
-    const notesResult = await generateNotesFlow({ classes: body.classes });
+    const notesResult = await generateNotes({
+      documentContent: body.documentContent,
+      noteStyle: body.noteStyle,
+      focusArea: body.focusArea
+    });
 
     if (!notesResult?.notes) {
       return NextResponse.json(

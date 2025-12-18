@@ -238,6 +238,8 @@ export default function GenerateNotesPage() {
 
 */
 //Igonre above code/* Express application setup and configuration
+
+/*
 "use client";
 
 import React, { useState } from "react";
@@ -331,3 +333,134 @@ export default function GenerateNotesPage() {
     </div>
   );
 }
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+"use client";
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Plus, Trash2, ChevronsDownUp } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+
+export default function GenerateNotesPage() {
+  const [classes, setClasses] = useState([{ name: "" }]);
+  const [notes, setNotes] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState(true);
+
+  const handleAddClass = () => setClasses([...classes, { name: "" }]);
+  const handleRemoveClass = (index: number) =>
+    setClasses(classes.filter((_, i) => i !== index));
+  const handleChange = (index: number, value: string) => {
+    const updated = [...classes];
+    updated[index].name = value;
+    setClasses(updated);
+  };
+
+  const handleGenerate = async () => {
+    setError("");
+    setNotes(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/generate-notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ classes }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate notes");
+      setNotes(data.notes);
+      setExpanded(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-8 space-y-6">
+      <h1 className="text-3xl font-extrabold mb-6 text-center">📝 AI Notes Generator</h1>
+
+      <div className="space-y-4">
+        {classes.map((cls, index) => (
+          <Card key={index} className="flex items-center gap-4 p-4">
+            <Input
+              placeholder="Class Name or Topic"
+              value={cls.name}
+              onChange={(e) => handleChange(index, e.target.value)}
+              className="flex-1"
+            />
+            {classes.length > 1 && (
+              <Button
+                variant="destructive"
+                onClick={() => handleRemoveClass(index)}
+                className="p-2"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex gap-4">
+        <Button
+          onClick={handleAddClass}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" /> Add Class
+        </Button>
+
+        <Button
+          onClick={handleGenerate}
+          disabled={loading || classes.some((c) => !c.name)}
+          className="flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin h-4 w-4" /> Generating Notes...
+            </>
+          ) : (
+            "Generate Notes"
+          )}
+        </Button>
+      </div>
+
+      {error && <p className="text-red-500 text-center">{error}</p>}
+
+      {notes && (
+        <Card className="mt-6">
+          <CardHeader
+            className="flex justify-between items-center cursor-pointer"
+            onClick={() => setExpanded(!expanded)}
+          >
+            <CardTitle className="text-lg font-bold">📖 Generated Notes</CardTitle>
+            <ChevronsDownUp className={`h-5 w-5 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </CardHeader>
+          {expanded && (
+            <CardContent className="prose max-w-full overflow-x-auto">
+              <ReactMarkdown>{notes}</ReactMarkdown>
+            </CardContent>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+

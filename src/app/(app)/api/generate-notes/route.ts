@@ -190,6 +190,9 @@ Notes must be accurate, actionable, and reflect what a student actually needs to
 }
 */
 
+
+
+
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -309,3 +312,5 @@ Notes must be accurate, actionable, and reflect what a student actually needs to
     );
   }
 }
+
+
